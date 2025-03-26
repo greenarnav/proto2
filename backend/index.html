@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentiment Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        #map { height: 500px; }
+    </style>
+</head>
+<body>
+
+    <h2>Sentiment Locations</h2>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            // Initialize the map centered at an average location
+            const map = L.map('map').setView([40.7644, -73.9558], 12);
+
+            // Load map tiles from OpenStreetMap
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+
+            try {
+                // Fetch data from API
+                const response = await fetch('http://3.85.90.14/sentiments');
+                const data = await response.json();
+
+                // Check if data is an array or a single object
+                const locations = Array.isArray(data) ? data : [data];
+
+                // Add markers to the map
+                locations.forEach(item => {
+                    if (item.latitude && item.longitude) {
+                        L.marker([parseFloat(item.latitude), parseFloat(item.longitude)])
+                            .addTo(map)
+                            .bindPopup(`
+                                <strong>Sentiment:</strong> ${item.sentiment_value} <br>
+                                <strong>Confidence:</strong> ${item.confidence} <br>
+                                <strong>Location:</strong> ${item.location_description} <br>
+                                <strong>Reason:</strong> ${item.reason}
+                            `);
+                    }
+                });
+
+            } catch (error) {
+                console.error("Error fetching sentiment data:", error);
+            }
+        });
+    </script>
+</body>
+</html> -->
+
+
+
+<!-- ################################################################################################################################### -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentiment Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        #map {
+            height: 100vh; /* Full-screen map */
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            // Initialize the map with a default zoom level
+            const map = L.map('map').setView([40.7644, -73.9558], 15);
+
+            // Add OpenStreetMap tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+
+            const bounds = L.latLngBounds(); // Create a bounds object
+
+            try {
+                const response = await fetch('http://3.85.90.14/sentiments');
+                const data = await response.json();
+                const locations = Array.isArray(data) ? data : [data];
+
+                locations.forEach(item => {
+                    const lat = parseFloat(item.latitude);
+                    const lon = parseFloat(item.longitude);
+
+                    if (!isNaN(lat) && !isNaN(lon)) {
+                        const marker = L.marker([lat, lon]).addTo(map).bindPopup(`
+                            <strong>Sentiment:</strong> ${item.sentiment_value} <br>
+                            <strong>Confidence:</strong> ${item.confidence} <br>
+                            <strong>Location:</strong> ${item.location_description} <br>
+                            <strong>Reason:</strong> ${item.reason}
+                        `);
+                        bounds.extend([lat, lon]); // Expand bounds to include marker
+                    }
+                });
+
+                // Automatically adjust map view to fit all markers
+                if (!bounds.isEmpty()) {
+                    map.fitBounds(bounds);
+                }
+
+            } catch (error) {
+                console.error("Error fetching sentiment data:", error);
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+<!-- ################################################################################################################################### -->
+<!-- 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentiment Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        #map {
+            height: 100vh;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            const map = L.map('map').setView([40.7644, -73.9558], 15);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+
+            const bounds = L.latLngBounds();
+
+            try {
+                const response = await fetch('http://3.85.90.14/sentiments');
+                let data = await response.json();
+                let locations = Array.isArray(data) ? data : [data];
+
+                console.log("Raw Locations:", locations);
+
+                // Remove duplicate locations based on lat/lon
+                const uniqueLocations = Array.from(new Set(locations.map(loc => `${loc.latitude},${loc.longitude}`)))
+                    .map(coord => {
+                        const [lat, lon] = coord.split(',');
+                        return locations.find(loc => loc.latitude === lat && loc.longitude === lon);
+                    });
+
+                console.log("Unique Locations:", uniqueLocations);
+
+                // Function to add slight jitter to overlapping points
+                const jitter = () => (Math.random() - 0.5) * 0.0005;
+
+                uniqueLocations.forEach(item => {
+                    let lat = parseFloat(item.latitude) + jitter();
+                    let lon = parseFloat(item.longitude) + jitter();
+
+                    console.log(`Placing marker at Latitude: ${lat}, Longitude: ${lon}`);
+
+                    if (!isNaN(lat) && !isNaN(lon)) {
+                        L.marker([lat, lon]).addTo(map).bindPopup(`
+                            <strong>Sentiment:</strong> ${item.sentiment_value} <br>
+                            <strong>Confidence:</strong> ${item.confidence} <br>
+                            <strong>Location:</strong> ${item.location_description} <br>
+                            <strong>Reason:</strong> ${item.reason}
+                        `);
+                        bounds.extend([lat, lon]);
+                    }
+                });
+
+                if (!bounds.isEmpty()) {
+                    map.fitBounds(bounds);
+                }
+            } catch (error) {
+                console.error("Error fetching sentiment data:", error);
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+
+<!-->
+
+
+
+
+
+<!-- 
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentiment Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        #map {
+            height: 100vh; /* Full-screen map */
+            width: 100%;
+        }
+        .legend {
+            background: white;
+            padding: 10px;
+            font-size: 14px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            const map = L.map('map').setView([40.7644, -73.9558], 15);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+
+            const bounds = L.latLngBounds();
+
+            // Sentiment color mapping
+            const sentimentColors = {
+                "grateful": "green", "melancholic": "blue", "creative": "purple", 
+                "joyful": "yellow", "hopeful": "orange", "free": "pink", 
+                "calm": "lightblue", "uplifted": "lightgreen", "peaceful": "darkgreen", 
+                "inward": "gray", "playful": "red", "romantic": "magenta", 
+                "observant": "brown", "reflective": "cyan", "curious": "olive", 
+                "serene": "navy", "grounded": "maroon", "mindful": "teal", 
+                "connected": "gold", "refreshed": "lime", "thoughtful": "darkblue", 
+                "compassionate": "beige", "centered": "coral", "restful": "lightgray", 
+                "inspired": "violet", "relieved": "indigo", "loving": "darkred"
+            };
+
+            try {
+                const response = await fetch('http://3.85.90.14/sentiments');
+                const data = await response.json();
+                // console.log("Fetched Sentiment Data:", data); // Log entire dataset
+                
+                const locations = Array.isArray(data) ? data : [data];
+
+                locations.forEach(item => {
+                    const lat = parseFloat(item.latitude);
+                    const lon = parseFloat(item.longitude);
+                    let sentiment = item.sentiment_value ? item.sentiment_value.trim().toLowerCase() : "";
+                    
+                    if (!sentiment) {
+                        console.warn("Missing sentiment value for:", item);
+                        sentiment = "unknown"; // Assign default category
+                    }
+
+                    const color = sentimentColors[sentiment] || "black"; // Ensure a color is always assigned
+                    console.log(`Sentiment: ${sentiment}, Assigned Color: ${color}`);
+
+
+                    if (!isNaN(lat) && !isNaN(lon)) {
+                        L.circleMarker([lat, lon], {
+                            color: color,
+                            fillColor: color,
+                            fillOpacity: 0.8,
+                            radius: 8,
+                            weight:2
+                        }).addTo(map).bindPopup(`
+                            <strong>Sentiment:</strong> ${item.sentiment_value || "Unknown"} <br>
+                            <strong>Confidence:</strong> ${item.confidence} <br>
+                            <strong>Location:</strong> ${item.location_description} <br>
+                            <strong>Reason:</strong> ${item.reason}
+                        `);
+                        bounds.extend([lat, lon]);
+                    } else {
+                        console.warn("Invalid latitude/longitude for:", item);
+                    }
+                });
+
+                if (!bounds.isEmpty()) {
+                    map.fitBounds(bounds);
+                }
+
+                // Add legend
+                const legend = L.control({ position: "bottomright" });
+                legend.onAdd = function(map) {
+                    const div = L.DomUtil.create("div", "legend");
+                    div.innerHTML = "<h4>Sentiment Legend</h4>";
+                    for (const sentiment in sentimentColors) {
+                        div.innerHTML += `<i style="background:${sentimentColors[sentiment]}; width:15px; height:15px; display:inline-block; margin-right:5px;"></i>${sentiment}<br>`;
+                    }
+                    return div;
+                };
+                legend.addTo(map);
+
+            } catch (error) {
+                console.error("Error fetching sentiment data:", error);
+            }
+        });
+    </script>
+</body>
+</html> -->
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentiment Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        #map { height: 100vh; width: 100%; }
+        .legend {
+            background: white;
+            padding: 10px;
+            font-size: 14px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+    
+
+    document.addEventListener("DOMContentLoaded", async () => {
+    // Initialize the map with a default zoom level
+    const map = L.map('map').setView([40.7644, -73.9558], 15);
+
+    // Add OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    const bounds = L.latLngBounds(); // Create a bounds object
+
+    // Fetch sentiment data and place markers
+    try {
+        const response = await fetch('http://3.85.90.14/sentiments');
+        const data = await response.json();
+        const locations = Array.isArray(data) ? data : [data];
+
+        const sentimentColors = {
+            "grateful": "green", "melancholic": "blue", "creative": "purple", 
+            "joyful": "yellow", "hopeful": "orange", "free": "pink", 
+            "calm": "lightblue", "uplifted": "lightgreen", "peaceful": "darkgreen", 
+            "inward": "gray", "playful": "red", "romantic": "magenta", 
+            "observant": "brown", "reflective": "cyan", "curious": "olive", 
+            "serene": "navy", "grounded": "maroon", "mindful": "teal", 
+            "connected": "gold", "refreshed": "lime", "thoughtful": "darkblue", 
+            "compassionate": "beige", "centered": "coral", "restful": "lightgray", 
+            "inspired": "violet", "relieved": "indigo", "loving": "darkred"
+        };
+
+        locations.forEach(item => {
+            const lat = parseFloat(item.latitude);
+            const lon = parseFloat(item.longitude);
+            const sentiment = item.sentiment_value.trim().toLowerCase();
+
+            // Assign color based on sentiment
+            const color = sentimentColors[sentiment] || "black";
+            console.log(`Sentiment: ${sentiment}, Assigned Color: ${color}`); // Debugging in terminal
+
+            if (!isNaN(lat) && !isNaN(lon)) {
+                L.circleMarker([lat, lon], {
+                    color: color,
+                    fillColor: color,
+                    fillOpacity: 0.8,
+                    radius: 8
+                }).addTo(map).bindPopup(`
+                    <strong>Sentiment:</strong> ${item.sentiment_value} <br>
+                    <strong>Confidence:</strong> ${item.confidence} <br>
+                    <strong>Location:</strong> ${item.location_description} <br>
+                    <strong>Reason:</strong> ${item.reason}
+                `);
+                bounds.extend([lat, lon]);
+            }
+        });
+
+        if (!bounds.isEmpty()) {
+            map.fitBounds(bounds);
+        }
+
+    } catch (error) {
+        console.error("Error fetching sentiment data:", error);
+    }
+
+    // Set user's location manually for testing
+    const testLat = 40.7644000;
+    const testLon = -73.9562800;
+
+    console.log("Test User's Location:", testLat, testLon);
+
+    // First marker for user's location
+    L.circleMarker([testLat, testLon], {
+        color: "red",
+        fillColor: "red",
+        fillOpacity: 0.8,
+        radius: 8
+    }).addTo(map).bindPopup("Your Current Location").openPopup();
+
+    // Second marker at the same location with a different color
+    L.circleMarker([testLat, testLon], {
+        color: "blue",
+        fillColor: "blue",
+        fillOpacity: 0.5,
+        radius: 10
+    }).addTo(map).bindPopup("Extra Marker at Your Location");
+
+    // Adjust map to user's location
+    map.setView([testLat, testLon], 15);
+});
+
+        </script>
+        
+</body>
+</html>

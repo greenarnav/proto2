@@ -1,0 +1,176 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 20% 99%;
+    --foreground: 220 30% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 30% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 30% 15%;
+
+    --primary: 210 90% 60%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 15% 95%;
+    --secondary-foreground: 220 30% 15%;
+
+    --muted: 210 15% 95%;
+    --muted-foreground: 215 15% 45%;
+
+    --accent: 210 15% 95%;
+    --accent-foreground: 220 30% 15%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 210 20% 93%;
+    --input: 214 20% 91%;
+    --ring: 225 70% 60%;
+
+    --radius: 0.75rem;
+    
+    /* Dashboard-specific colors */
+    --sentiment-positive: 200 75% 55%;
+    --sentiment-neutral: 35 90% 65%;
+    --sentiment-negative: 5 80% 65%;
+    
+    --activity-low: 150 60% 60%;
+    --activity-medium: 45 80% 60%;
+    --activity-high: 350 70% 60%;
+  }
+
+  .dark {
+    --background: 220 30% 10%;
+    --foreground: 210 20% 98%;
+
+    --card: 220 25% 12%;
+    --card-foreground: 210 20% 98%;
+
+    --popover: 220 25% 12%;
+    --popover-foreground: 210 20% 98%;
+
+    --primary: 210 90% 60%;
+    --primary-foreground: 210 20% 98%;
+
+    --secondary: 215 25% 18%;
+    --secondary-foreground: 210 20% 98%;
+
+    --muted: 215 25% 18%;
+    --muted-foreground: 210 20% 70%;
+
+    --accent: 215 25% 18%;
+    --accent-foreground: 210 20% 98%;
+
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 210 20% 98%;
+
+    --border: 215 25% 20%;
+    --input: 215 25% 20%;
+    --ring: 225 70% 60%;
+    
+    /* Dashboard-specific colors */
+    --sentiment-positive: 200 70% 50%;
+    --sentiment-neutral: 35 80% 60%;
+    --sentiment-negative: 5 70% 60%;
+    
+    --activity-low: 150 55% 50%;
+    --activity-medium: 45 70% 55%;
+    --activity-high: 350 65% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply tracking-tight font-medium;
+  }
+  
+  h1 {
+    @apply text-3xl md:text-4xl;
+  }
+  
+  h2 {
+    @apply text-2xl md:text-3xl;
+  }
+  
+  h3 {
+    @apply text-xl md:text-2xl;
+  }
+}
+
+@layer utilities {
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+  
+  .glass-card {
+    @apply bg-white/70 dark:bg-gray-800/70 backdrop-blur-md border border-white/20 dark:border-gray-700/30 shadow-soft rounded-lg transition-all duration-300 hover:shadow-hover;
+  }
+  
+  .glass-panel {
+    @apply bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm backdrop-saturate-150 border border-white/20 dark:border-gray-700/30 shadow-soft rounded-lg;
+  }
+  
+  .data-card {
+    @apply glass-card p-5 animate-scale-in;
+  }
+  
+  .metric-value {
+    @apply text-2xl font-medium;
+  }
+  
+  .metric-label {
+    @apply text-sm text-muted-foreground;
+  }
+  
+  .data-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4;
+  }
+  
+  .stagger-animation > * {
+    @apply opacity-0;
+    animation: fade-in-stagger 0.5s ease-out forwards;
+  }
+  
+  .stagger-animation > *:nth-child(1) { animation-delay: 0.1s; }
+  .stagger-animation > *:nth-child(2) { animation-delay: 0.2s; }
+  .stagger-animation > *:nth-child(3) { animation-delay: 0.3s; }
+  .stagger-animation > *:nth-child(4) { animation-delay: 0.4s; }
+  .stagger-animation > *:nth-child(5) { animation-delay: 0.5s; }
+  .stagger-animation > *:nth-child(6) { animation-delay: 0.6s; }
+  .stagger-animation > *:nth-child(7) { animation-delay: 0.7s; }
+  .stagger-animation > *:nth-child(8) { animation-delay: 0.8s; }
+  
+  @keyframes fade-in-stagger {
+    0% { opacity: 0; transform: translateY(10px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  
+  .hover-lift {
+    @apply transition-transform duration-300 ease-out;
+  }
+  
+  .hover-lift:hover {
+    transform: translateY(-3px);
+  }
+  
+  .text-balance {
+    text-wrap: balance;
+  }
+}
